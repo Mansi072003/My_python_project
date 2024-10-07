@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text Summarizer</title>
+  <style>
+  body {
+    background: black;
+    font-family: 'Open Sans', sans-serif; /* Example font family change */
+    color: #333;
+    text-align: center;
+    margin-top: 50px;
+    
+  }
+  form{
+    background-color: #a3cffa; /* Light gray background */
+    border-radius: 5px;
+    padding: 20px;
+    margin: 0 auto; /* Center content horizontally */
+    max-width: 700px; /* Optional: Set a maximum width */
+  }
+  
+  .container { /* Wrap elements for layout (optional) */
+    border-radius: 5px;
+    padding: 20px;
+    margin: 0 auto; /* Center content horizontally */
+    max-width: 700px; /* Optional: Set a maximum width */
+
+
+  }
+  
+  h1 {
+    font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif; /* Example heading font */
+    font-size: 2.5em;
+    margin-bottom: 15px;
+  }
+  
+  .card { /* Optional: Wrap input section in a card */
+    border: none;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    margin-bottom: 20px;
+  }
+  
+  .card-header {
+    background-color: #e9ecef; /* Light gray header */
+    font-weight: bold;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    padding: 10px;
+  }
+  
+  #inputText {
+    resize: none;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  
+  #wordCount,
+  #summary,
+  #keywords {
+    white-space: pre-wrap;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    opacity: 0; /* Initially hidden */
+    transition: opacity 0.5s ease-in-out;
+  }
+  
+  #progress { /* Animate progress bar filling */
+    height: 5px;
+    background-color: #000000;
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  
+  #progressBar {
+    background-color: #4CAF50;
+    transition: width 0.5s ease-in-out;
+    animation: progressFill 1s ease-in-out forwards;
+  }
+  
+  @keyframes progressFill {
+    from { width: 0%; }
+    to { width: 100%; }
+  }
+  
+  button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out;
+    margin-bottom: 15px;
+    margin-top: 10px;
+  }
+  
+  button:hover {
+    background-color: #45a049;
+  }
+  </style>
+  
+</head>
+<body>
+<form>
+  <h1>Text Summarizer</h1>
+  <textarea id="inputText" rows="10" cols="50" oninput="countWords()"></textarea><br>
+  <p>Number of Words: <span id="wordCount">0</span></p>
+  <label for="wordLimit">Word Limit:</label>
+  <input type="number" id="wordLimit" name="wordLimit" min="1" value="100"><br>
+  <button onclick="summarizeText()">Summarize</button><br>
+  <div id="progress">
+    <div id="progressBar"></div>
+  </div>
+  <h2>Summary:</h2>
+  <div id="summary"></div>
+  <h2>Keywords:</h2>
+  <div id="keywords"></div>
+  </form>
+
+    <script>
+        function countWords() {
+            var inputText = document.getElementById('inputText').value;
+            var wordCount = inputText.trim().split(/\s+/).length;
+            document.getElementById('wordCount').textContent = wordCount;
+        }
+
+        function summarizeText() {
+            var inputText = document.getElementById('inputText').value;
+            var wordLimit = document.getElementById('wordLimit').value;
+
+            fetch('/summarize', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'input_text=' + encodeURIComponent(inputText) + '&word_limit=' + encodeURIComponent(wordLimit),
+            })
+            .then(response => response.text())
+            .then(summary => {
+                document.getElementById('summary').innerHTML = summary;
+            });
+
+            fetch('/keywords', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'input_text=' + encodeURIComponent(inputText),
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('keywords').innerHTML = data.keywords.join(', ');
+            });
+        }
+    </script>
+</body>
+</html>
